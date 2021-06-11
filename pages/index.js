@@ -36,6 +36,7 @@ export async function getStaticProps() {
         id: m._id.toString(),
       })),
     },
+    revalidate: 5,
   };
 }
 
