@@ -1,4 +1,5 @@
 import MeetupDetails from '../../components/meetups/MeetupDetails';
+import { MongoClient, ObjectID } from 'mongodb';
 
 const MeetupDetailPage = ({ meetup }) => {
   return (
@@ -11,23 +12,43 @@ const MeetupDetailPage = ({ meetup }) => {
   );
 };
 
-export const getStaticPaths = () => {
+export const getStaticPaths = async () => {
+  const client = await MongoClient.connect(
+    `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PWD}@cluster0.gvoli.mongodb.net/meetups?retryWrites=true&w=majority`
+  );
+
+  const db = client.db();
+  const meetupCollection = db.collection('meetups');
+  const meetups = await meetupCollection.find().toArray();
+  const paths = meetups.map((meetup) => ({
+    params: { meetupId: meetup._id.toString() },
+  }));
+  client.close();
   return {
-    paths: [{ params: { meetupId: '1' } }, { params: { meetupId: '2' } }],
+    paths,
     fallback: false,
   };
 };
 
-export const getStaticProps = ({ params }) => {
+export const getStaticProps = async ({ params }) => {
   const meetupId = params.meetupId;
+  const client = await MongoClient.connect(
+    `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PWD}@cluster0.gvoli.mongodb.net/meetups?retryWrites=true&w=majority`
+  );
+
+  const db = client.db();
+  const meetupCollection = db.collection('meetups');
+  const meetup = await meetupCollection.findOne({ _id: ObjectID(meetupId) });
+  client.close();
+
   return {
     props: {
       meetup: {
         id: meetupId,
-        title: 'Hillstation house',
-        image: 'https://wallpapercave.com/wp/wp2337103.jpg',
-        address: 'Wonder Garden hills, Bellford, LN',
-        description: 'a beautiful fort in the middle of greenlands',
+        title: meetup.title,
+        image: meetup.image,
+        description: meetup.description,
+        address: meetup.address,
       },
     },
   };
