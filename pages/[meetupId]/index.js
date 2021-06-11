@@ -58,6 +58,7 @@ export const getStaticProps = async ({ params }) => {
         address: meetup.address,
       },
     },
+    revalidate: 5,
   };
 };
 
