@@ -33,7 +33,7 @@ export const getStaticPaths = async () => {
   client.close();
   return {
     paths,
-    fallback: false,
+    fallback: 'blocking',
   };
 };
 
